@@ -22,10 +22,9 @@ jobs:
       - name: Unit tests
         run: make test
 
-  # Best effort: needs a clice release and a working C++ toolchain.
+  # Needs a clice release and a working C++ toolchain.
   integration:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: jcs090218/setup-emacs@master
