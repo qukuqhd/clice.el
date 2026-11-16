@@ -1,0 +1,7 @@
+*.elc
+.eask/
+.elpa/
+.dir-locals.el
+.cask/
+node_modules/
+.DS_Store
