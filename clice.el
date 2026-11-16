@@ -141,7 +141,8 @@ This turns `hs-minor-mode' off in those buffers."
   "i" #'clice-index
   "s" #'clice-scan
   "q" #'clice-query
-  "t" #'clice-open-project-config)
+  "t" #'clice-open-project-config
+  "d" #'clice-status)
 
 (defvar clice--setup-p nil
   "Non-nil when `clice-setup' has installed its hooks and advice.")
@@ -258,6 +259,93 @@ CAPABILITIES is the plist returned by `eglot-client-capabilities'."
     (with-temp-buffer
       (when (zerop (call-process clice-executable nil t nil "--version"))
         (string-trim (buffer-string))))))
+
+;;; Status
+
+;;;###autoload
+(defun clice-status ()
+  "Describe this buffer's LSP server and clice features."
+  (interactive)
+  (let* ((buffer (current-buffer))
+         (server (ignore-errors (eglot-current-server)))
+         (clice-server (and server (clice--server-p server) server))
+         (modes (with-current-buffer buffer
+                  (delq nil
+                        (list (and (bound-and-true-p clice-links-mode) "links")
+                              (and (bound-and-true-p clice-fold-mode) "folding")
+                              (and (bound-and-true-p eglot-semantic-tokens-mode)
+                                   "semantic-tokens")
+                              (and (bound-and-true-p eglot-inlay-hints-mode)
+                                   "inlay-hints")))))
+         (context (with-current-buffer buffer
+                    (and (fboundp 'clice--current-context)
+                         (ignore-errors (clice--current-context)))))
+         (capabilities
+          (with-current-buffer buffer
+            (delq nil
+                  (mapcar
+                   (lambda (capability)
+                     (and (ignore-errors
+                            (eglot-server-capable capability))
+                          capability))
+                   '(:documentLinkProvider :foldingRangeProvider
+                     :selectionRangeProvider :inlayHintProvider
+                     :semanticTokensProvider))))))
+    (with-current-buffer (get-buffer-create "*clice status*")
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "Buffer:      %s\n" (buffer-name buffer)))
+        (cond
+         ((null server)
+          (insert "LSP server:  none\n"))
+         ((null clice-server)
+          (insert (format "LSP server:  %s (not clice)\n"
+                          (or (ignore-errors (eglot--server-name server))
+                              "unknown"))))
+         (t
+          (let ((info (eglot--server-info clice-server))
+                (command (ignore-errors
+                           (process-command (jsonrpc--process clice-server))))
+                (project (ignore-errors
+                           (project-root (eglot--project clice-server))))
+                (languages (ignore-errors (eglot--language-ids clice-server))))
+            (insert (format "LSP server:  clice %s\n"
+                            (or (plist-get info :version) "?")))
+            (insert (format "Command:     %s\n"
+                            (if command (string-join command " ") "?")))
+            (insert (format "Project:     %s\n" (or project "?")))
+            (insert (format "Languages:   %s\n"
+                            (string-join
+                             (or (delete-dups (copy-sequence languages))
+                                 (list "?"))
+                             " ")))
+            (insert (format "Buffer modes: %s\n"
+                            (if modes (string-join modes " ") "none")))
+            (if context
+                (insert (format "Context:     %s (%s%s)\n"
+                                (or (plist-get (plist-get context :context)
+                                               :label)
+                                    "none")
+                                (if (eq (plist-get context :automatic)
+                                        :json-false)
+                                    "chosen" "automatic")
+                                (if (eq (plist-get context :otherContexts)
+                                        :json-false)
+                                    ", other contexts hidden" "")))
+              (insert "Context:     unavailable\n"))
+            (insert (format "Capabilities: %s\n"
+                            (string-join
+                             (mapcar
+                              (lambda (capability)
+                                (replace-regexp-in-string
+                                 "Provider\\'" ""
+                                 (replace-regexp-in-string
+                                  "\\`:" "" (symbol-name capability))))
+                              capabilities)
+                             " ")))))))
+      (special-mode)
+      (goto-char (point-min))
+      (display-buffer (current-buffer)))))
 
 ;;; Setup
 

@@ -61,6 +61,7 @@ started for C/C++ buffers.
 | `clice-switch-configuration` | choose a build configuration (restarts) |
 | `clice-switch-counterparts` | header ↔ source, interface ↔ implementation |
 | `clice-show-compile-command` | show the file's complete compile command |
+| `clice-status` | show whether the buffer uses clice and its details |
 | `clice-restart-server` | restart the clice server |
 | `clice-expand-region` / `clice-contract-region` | syntax selection ranges |
 | `clice-toggle-fold` / `clice-fold-all` / `clice-unfold-all` | folding |
