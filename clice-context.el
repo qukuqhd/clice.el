@@ -40,6 +40,11 @@
   :type 'boolean
   :group 'clice)
 
+(defcustom clice-context-auto-refresh t
+  "Whether to refresh the compilation context in the background."
+  :type 'boolean
+  :group 'clice)
+
 (defcustom clice-context-refresh-on-save t
   "Whether to refresh the context display after saving a buffer."
   :type 'boolean
@@ -218,7 +223,8 @@ may not be initialized yet, or clice may not answer for it."
     (when clice-context-refresh-on-save
       (add-hook 'after-save-hook #'clice-context-refresh nil t))
     ;; The server may still be initializing when the mode starts.
-    (run-at-time 0.5 nil #'clice-context-refresh (current-buffer))))
+    (when clice-context-auto-refresh
+      (run-at-time 0.5 nil #'clice-context-refresh (current-buffer)))))
 
 (add-hook 'eglot-managed-mode-hook #'clice--context-setup)
 

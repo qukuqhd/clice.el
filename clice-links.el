@@ -123,7 +123,7 @@ BUFFER defaults to the current buffer."
                         (push overlay clice--link-overlays))))))
             (error nil)))))))
 
-(defun clice--links-schedule-refresh ()
+(defun clice--links-schedule-refresh (&rest _)
   "Schedule a debounced document-link refresh."
   (when (and clice-links-mode clice-links-auto-refresh)
     (when (timerp clice--links-refresh-timer)

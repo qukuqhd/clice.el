@@ -139,7 +139,7 @@ BUFFER defaults to the current buffer."
                 (clice--fold-render))
             (error nil)))))))
 
-(defun clice--fold-schedule-refresh ()
+(defun clice--fold-schedule-refresh (&rest _)
   "Schedule a debounced folding refresh."
   (when (and clice-fold-mode clice-fold-auto-refresh)
     (when (timerp clice--fold-refresh-timer)

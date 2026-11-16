@@ -85,12 +85,14 @@ NO-JOBS disables the flag for commands that do not accept it."
           (erase-buffer)
           (let ((status (apply #'call-process clice-executable nil t nil
                                (clice--cli-args arguments))))
-            (unless (zerop status)
-              (user-error "clice %s failed: %s"
-                          (string-join arguments " ")
-                          (string-trim (buffer-string))))
             (goto-char (point-min))
-            (json-parse-buffer :object-type 'plist :array-type 'list)))
+            (condition-case nil
+                (json-parse-buffer :object-type 'plist :array-type 'list)
+              (error
+               (user-error "clice %s failed (exit %d): %s"
+                           (string-join arguments " ")
+                           status
+                           (string-trim (buffer-string)))))))
       (kill-buffer buffer))))
 
 (defun clice--json-buffer (title data)
