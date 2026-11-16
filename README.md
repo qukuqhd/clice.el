@@ -136,15 +136,19 @@ The package does not bind keys globally.  For example:
 - The CLI commands and the running server share clice's cache; avoid a long
   `clice index` while the server is compiling heavily.
 
-## Development
+## Development and testing
 
 ```sh
 make compile           # byte-compile
-make test              # unit tests (no server needed)
-make test-integration  # needs clice on PATH
+make lint              # checkdoc
+make test              # 26 unit tests (no server needed)
+make test-integration  # 10 end-to-end tests, needs clice on PATH
 ```
 
-Integration tests are skipped when `clice` is not installed.
+Integration tests copy fixture projects from `test/fixtures/`, write a
+compilation database and start a real `clice serve` through Eglot.  They
+are skipped when `clice` is not installed; the modules test also needs
+`clang++`.  See `docs/TESTING.md` for the coverage matrix and known gaps.
 
 ## License
 

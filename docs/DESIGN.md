@@ -114,7 +114,7 @@ plist；Emacs 的 json 序列化会把 `:restartServer` 写成 `restartServer`�
 | M1 | 包骨架 + 能力注入 + restart + context/config/counterparts/compile command | **已完成** |
 | M2 | documentLink、folding、selection、inactive 完善 | **已完成** |
 | M3 | CLI、clice.toml、语言 id | **已完成**（codeDescription 暂缓） |
-| M4 | 集成测试、CI、文档、MELPA、可选上游 PR | 测试/CI/文档完成；MELPA 与上游 PR 待做 |
+| M4 | 集成测试、CI、文档、MELPA、可选上游 PR | 测试/CI/文档完成（10 个端到端用例，见 `docs/TESTING.md`）；MELPA 与上游 PR 待做 |
 
 ## 实现备注
 
