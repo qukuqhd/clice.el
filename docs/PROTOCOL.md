@@ -9,25 +9,25 @@ top of LSP; they do not appear in `initialize` capabilities.
 ```json
 {
   "capabilities": {
-    "experimental": { "restart_server": true }
+    "experimental": { "restartServer": true }
   }
 }
 ```
 
-When `restart_server` is true, clice sends `clice/restartServer` (a request)
-instead of a "restart to apply" diagnostic.  In Emacs, `:restart_server` is
-the plist key that serialises to `restart_server`.
+When `restartServer` is true, clice sends `clice/restartServer` (a request)
+instead of a "restart to apply" diagnostic.  In Emacs, `:restartServer` is
+the plist key that serialises to `restartServer`.
 
 ## Requests (client → server)
 
 | Method | Params | Result |
 |---|---|---|
 | `clice/queryContext` | `{uri, offset?}` | `{contexts: [ContextItem], total, epoch}` |
-| `clice/currentContext` | `{uri}` | `{context?, automatic, inactive_choice?, command?, epoch, other_contexts}` |
-| `clice/switchContext` | `{uri, context_uri, occurrence?, command_hash?, epoch?}` | `{success, stale}` |
+| `clice/currentContext` | `{uri}` | `{context?, automatic, inactiveChoice?, command?, epoch, otherContexts}` |
+| `clice/switchContext` | `{uri, contextUri, occurrence?, commandHash?, epoch?}` | `{success, stale}` |
 | `clice/resetContext` | `{uri}` | `{success, stale}` |
 | `clice/showOtherContexts` | `{uri, show}` | `{success, stale}` |
-| `clice/listConfigurations` | `{uri?}` | `{configurations, active, build?, selected, default_configuration}` |
+| `clice/listConfigurations` | `{uri?}` | `{configurations, active, build?, selected, defaultConfiguration}` |
 | `clice/switchConfiguration` | `{name, uri?}` | `{success, reason?}` |
 | `clice/counterparts` | `{uri}` | `{candidates: [{uri, reasons}], preferred?}` |
 
@@ -39,7 +39,7 @@ the plist key that serialises to `restart_server`.
 | `description` | path or build configuration |
 | `uri` | host source file (header contexts) or the file itself |
 | `occurrence?` | which `#include` site, when a header is entered more than once |
-| `command_hash?` | identifies a compilation-database entry for multiply-compiled sources |
+| `commandHash?` | identifies a compilation-database entry for multiply-compiled sources |
 
 `epoch` in `queryContext` and `currentContext` is the workspace generation the
 listing was computed against.  Pass it back to `switchContext`; if the
@@ -54,7 +54,7 @@ must re-query and retry.
 | `from?` | the file whose command it borrows |
 | `directory` | working directory |
 | `arguments` | compiler arguments |
-| `query_failure?` | why the compiler could not be queried |
+| `queryFailure?` | why the compiler could not be queried |
 
 `currentContext` returns it only for an open document.
 

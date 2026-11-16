@@ -27,7 +27,7 @@
 
 - 标准 LSP 能力齐全，额外支持 pull 诊断、语义 Token delta、内联提示。
 - 自定义方法见 `PROTOCOL.md`；`clice/restartServer` 只有在客户端声明
-  `capabilities.experimental.restart_server = true` 时才发送。
+  `capabilities.experimental.restartServer = true` 时才发送。
 - "其他编译上下文变暗"来自语义 Token 的 `inactive` modifier，不需要新协议。
 - 配置：项目根 `clice.toml` / `.clice/config.toml`，保存后请求重启；
   支持 JSON Schema（`#:schema` 注释）。
@@ -59,11 +59,11 @@ clice-toml.el       clice.toml 辅助
 :textDocument (:documentLink (:dynamicRegistration :json-false)
                :foldingRange (:dynamicRegistration :json-false)
                :selectionRange (:dynamicRegistration :json-false))
-:experimental (:restart_server t)
+:experimental (:restartServer t)
 ```
 
 `eglot-client-capabilities` 原本的 `:experimental` 是空 hash table，直接替换为
-plist；Emacs 的 json 序列化会把 `:restart_server` 写成 `restart_server`。
+plist；Emacs 的 json 序列化会把 `:restartServer` 写成 `restartServer`。
 
 ### 重启
 
@@ -111,10 +111,21 @@ plist；Emacs 的 json 序列化会把 `:restart_server` 写成 `restart_server`
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | M0 | 配置层：官方 eglot 条目、语义 face、开关 inlay/semantic | 待做（可先落自定义配置） |
-| M1 | 包骨架 + 能力注入 + restart + context/config/counterparts/compile command | **骨架已完成**，命令待实现 |
-| M2 | documentLink、folding、selection、inactive 完善 | 待做 |
-| M3 | CLI、clice.toml、诊断 codeDescription、语言 id | 待做 |
-| M4 | 集成测试、CI、文档、MELPA、可选上游 PR | 进行中（CI/文档已有） |
+| M1 | 包骨架 + 能力注入 + restart + context/config/counterparts/compile command | **已完成** |
+| M2 | documentLink、folding、selection、inactive 完善 | **已完成** |
+| M3 | CLI、clice.toml、语言 id | **已完成**（codeDescription 暂缓） |
+| M4 | 集成测试、CI、文档、MELPA、可选上游 PR | 测试/CI/文档完成；MELPA 与上游 PR 待做 |
+
+## 实现备注
+
+- `clice/*` 的 JSON 字段全部是 camelCase（`contextUri`、`commandHash`、
+  `otherContexts`、`queryFailure`、`defaultConfiguration`、
+  `experimental.restartServer`），与 C++ 源码里的 snake_case 不同；以
+  `tools/protocol/protocol.ts` 为准。
+- 上下文/配置/头源切换都验证过真实服务器（0.1.0 与 1.0.0 两个版本）。
+- `clice/counterparts` 依赖已建立的索引；集成测试会先运行 `clice index`。
+- 语义 Token 的 `inactive` 修饰符通过 `eglot-semantic-inactive` face
+  实现"其他上下文变暗"。
 
 ## 验收标准
 

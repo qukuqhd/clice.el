@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,3 +21,23 @@ jobs:
         run: make compile
       - name: Unit tests
         run: make test
+
+  # Best effort: needs a clice release and a working C++ toolchain.
+  integration:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jcs090218/setup-emacs@master
+        with:
+          version: '31.1'
+      - name: Install clice
+        run: |
+          curl -fsSL -o clice.tar.gz \
+            https://github.com/clice-io/clice/releases/download/v1.0.0/clice-1.0.0.x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf clice.tar.gz -C "$HOME"
+          echo "$HOME/clice/bin" >> "$GITHUB_PATH"
+      - name: Check clice
+        run: clice --version
+      - name: Integration tests
+        run: make test-integration
