@@ -9,6 +9,7 @@
 
 (ert-deftest clice-semantic-types-extended ()
   "clice's extra token types are in Eglot's list and have faces."
+  (skip-unless (boundp 'eglot-semantic-token-types))
   (dolist (name '("field" "union" "module" "header" "directive"
                   "templateParameter" "typeAlias" "concept"))
     (should (member name eglot-semantic-token-types))
@@ -16,12 +17,15 @@
 
 (ert-deftest clice-semantic-modifiers-extended ()
   "clice's extra modifiers are in Eglot's list and have faces."
+  (skip-unless (boundp 'eglot-semantic-token-modifiers))
   (dolist (name '("local" "member" "virtual" "constexpr" "inactive"))
     (should (member name eglot-semantic-token-modifiers))
     (should (facep (intern (format "eglot-semantic-%s" name))))))
 
 (ert-deftest clice-semantic-extend-is-idempotent ()
   "Extending twice does not duplicate entries."
+  (skip-unless (and (boundp 'eglot-semantic-token-types)
+                    (boundp 'eglot-semantic-token-modifiers)))
   (clice-semantic--extend-lists)
   (clice-semantic--extend-lists)
   (should (= 1 (seq-count (lambda (x) (equal x "field"))

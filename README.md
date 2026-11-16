@@ -23,8 +23,9 @@ Eglot does not, and implements clice's own protocol extensions:
 
 ## Requirements
 
-- Emacs 30.1 or later (31.1 recommended: semantic tokens, inlay hints and
-  pull diagnostics)
+- Emacs 30.1 or later (31.1 recommended).  Emacs 30's Eglot has no
+  semantic tokens; `clice-semantic` then skips the token lists and the rest
+  degrades gracefully.
 - `clice` on `PATH` (or set `clice-executable`)
 
 ## Install
