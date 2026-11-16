@@ -322,16 +322,20 @@ CAPABILITIES is the plist returned by `eglot-client-capabilities'."
             (insert (format "Buffer modes: %s\n"
                             (if modes (string-join modes " ") "none")))
             (if context
-                (insert (format "Context:     %s (%s%s)\n"
-                                (or (plist-get (plist-get context :context)
-                                               :label)
-                                    "none")
-                                (if (eq (plist-get context :automatic)
-                                        :json-false)
-                                    "chosen" "automatic")
-                                (if (eq (plist-get context :otherContexts)
-                                        :json-false)
-                                    ", other contexts hidden" "")))
+                (let ((source (plist-get (plist-get context :command) :source)))
+                  (insert (format "Context:     %s (%s%s%s)\n"
+                                  (or (plist-get (plist-get context :context)
+                                                 :label)
+                                      "none")
+                                  (if (eq (plist-get context :automatic)
+                                          :json-false)
+                                      "chosen" "automatic")
+                                  (if (eq (plist-get context :otherContexts)
+                                          :json-false)
+                                      ", other contexts hidden" "")
+                                  (if source
+                                      (format "; command: %s" source)
+                                    ""))))
               (insert "Context:     unavailable\n"))
             (insert (format "Capabilities: %s\n"
                             (string-join
