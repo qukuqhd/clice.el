@@ -43,7 +43,7 @@
       (should (equal (plist-get text-document capability)
                      '(:dynamicRegistration :json-false))))
     (should (equal (plist-get output :experimental)
-                   '(:restart_server t)))
+                   '(:restartServer t)))
     ;; Eglot's other entries survive.
     (should (equal (plist-get text-document :hover)
                    '(:dynamicRegistration :json-false)))

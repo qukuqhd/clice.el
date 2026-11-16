@@ -34,7 +34,7 @@
 ;;     (c, cpp, objective-c, objective-c++, cuda-cpp, hip, opencl);
 ;;   - advertises the client capabilities clice looks for: document links,
 ;;     folding ranges, selection ranges, and the experimental
-;;     `restart_server' flag;
+;;     `restartServer' flag;
 ;;   - handles `clice/restartServer', so saving `clice.toml' or switching a
 ;;     build configuration reconnects the server instead of leaving a
 ;;     "restart to apply" diagnostic behind;
@@ -86,6 +86,17 @@ When nil, only report the reason; the user can call
   :type 'boolean
   :group 'clice)
 
+(defcustom clice-auto-enable-links t
+  "Whether to enable `clice-links-mode' in clice buffers."
+  :type 'boolean
+  :group 'clice)
+
+(defcustom clice-auto-enable-fold t
+  "Whether to enable `clice-fold-mode' in clice buffers.
+This turns `hs-minor-mode' off in those buffers."
+  :type 'boolean
+  :group 'clice)
+
 (defcustom clice-language-ids
   '((c-mode . "c")
     (c-ts-mode . "c")
@@ -100,6 +111,37 @@ When nil, only report the reason; the user can call
   "Major modes clice serves, mapped to their LSP language ids."
   :type '(alist :key-type symbol :value-type string)
   :group 'clice)
+
+(declare-function clice-current-server "clice-protocol" (&optional buffer))
+
+(declare-function clice-switch-context "clice-context" ())
+(declare-function clice-reset-context "clice-context" ())
+(declare-function clice-toggle-other-contexts "clice-context" ())
+(declare-function clice-switch-configuration "clice-context" ())
+(declare-function clice-switch-counterparts "clice-context" ())
+(declare-function clice-show-compile-command "clice-context" ())
+(declare-function clice-lint "clice-cli" ())
+(declare-function clice-format-check "clice-cli" ())
+(declare-function clice-index "clice-cli" ())
+(declare-function clice-scan "clice-cli" ())
+(declare-function clice-query "clice-cli" (&optional subcommand argument))
+(declare-function clice-open-project-config "clice-toml" ())
+
+(defvar-keymap clice-command-map
+  :doc "Prefix map for clice commands."
+  "c" #'clice-switch-context
+  "C" #'clice-switch-configuration
+  "r" #'clice-reset-context
+  "o" #'clice-toggle-other-contexts
+  "h" #'clice-switch-counterparts
+  "k" #'clice-show-compile-command
+  "R" #'clice-restart-server
+  "l" #'clice-lint
+  "f" #'clice-format-check
+  "i" #'clice-index
+  "s" #'clice-scan
+  "q" #'clice-query
+  "t" #'clice-open-project-config)
 
 (defvar clice--setup-p nil
   "Non-nil when `clice-setup' has installed its hooks and advice.")
@@ -150,7 +192,7 @@ CAPABILITIES is the plist returned by `eglot-client-capabilities'."
     (setq capabilities (plist-put capabilities :textDocument text-document))
     ;; clice only sends `clice/restartServer' when the client says it can
     ;; restart the server itself.
-    (plist-put capabilities :experimental (list :restart_server t))))
+    (plist-put capabilities :experimental (list :restartServer t))))
 
 (defun clice--inject-capabilities (orig server)
   "Around `eglot-client-capabilities': augment SERVER's capabilities for clice."
@@ -220,11 +262,28 @@ CAPABILITIES is the plist returned by `eglot-client-capabilities'."
 ;;; Setup
 
 ;;;###autoload
+(defun clice--enable-buffer-features ()
+  "Enable clice's buffer-local extras in the current buffer."
+  (when (and (clice-current-server) (buffer-file-name))
+    (when (and clice-auto-enable-links (fboundp 'clice-links-mode))
+      (clice-links-mode 1))
+    (when (and clice-auto-enable-fold (fboundp 'clice-fold-mode))
+      (clice-fold-mode 1))))
+
+(add-hook 'eglot-managed-mode-hook #'clice--enable-buffer-features)
+
 (defun clice-setup ()
   "Install clice's Eglot integration.
 Idempotent: safe to call from init files or a mode hook."
   (interactive)
   (require 'clice-protocol)
+  (require 'clice-context)
+  (require 'clice-links)
+  (require 'clice-fold)
+  (require 'clice-select)
+  (require 'clice-semantic)
+  (require 'clice-cli)
+  (require 'clice-toml)
   (clice--register-server-program)
   (advice-add 'eglot-client-capabilities :around #'clice--inject-capabilities)
   (setq clice--setup-p t))

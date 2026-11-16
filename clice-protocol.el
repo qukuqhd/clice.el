@@ -70,7 +70,25 @@ TIMEOUT, when non-nil, aborts the request after that many seconds."
 
 (defun clice--uri (&optional buffer)
   "Return the file URI of BUFFER, defaulting to the current buffer."
-  (eglot-path-to-uri (buffer-file-name (or buffer (current-buffer)))))
+  (let ((file (buffer-file-name (or buffer (current-buffer)))))
+    (unless file
+      (user-error "This buffer is not visiting a file"))
+    (eglot-path-to-uri file)))
+
+(defun clice-project-root (&optional directory)
+  "Return the clice project root for DIRECTORY.
+DIRECTORY defaults to `default-directory'.  Looks for `clice.toml',
+`.clice/config.toml' or `compile_commands.json' upwards, then falls back
+to the Emacs project root and finally to DIRECTORY itself."
+  (let* ((directory (file-name-as-directory
+                     (expand-file-name (or directory default-directory))))
+         (root (or (locate-dominating-file directory "clice.toml")
+                   (locate-dominating-file directory ".clice/config.toml")
+                   (locate-dominating-file directory "compile_commands.json")
+                   (when-let* ((project (ignore-errors (project-current nil directory))))
+                     (project-root project))
+                   directory)))
+    (file-name-as-directory (expand-file-name root))))
 
 (provide 'clice-protocol)
 
